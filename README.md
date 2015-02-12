@@ -1,2 +1,2 @@
-# tsne_explorer
-tSNE projection of RAVE survey spectra 
+# t-SNE Explorer
+t-SNE projection of RAVE survey spectra 
