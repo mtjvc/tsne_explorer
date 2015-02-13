@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+		<title>RAVE Explorer</title>
+
+    <link type="text/css" href="style.css" rel="stylesheet" />
+
+		<script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.3/jquery.js"></script>
+
+    <script type="text/javascript" src="http://malsup.github.com/jquery.cycle.all.js"></script>
+    <script type="text/javascript" src="http://malsup.github.com/jquery.easing.1.3.js"></script>
+
+		<link href='http://fonts.googleapis.com/css?family=Abel' rel='stylesheet' type='text/css'>
+
+    <script type="text/javascript">
+        $(function() {
+            $('#cycle').cycle({
+              fx:     'scrollLeft',
+              speed:  300,
+              next:   '#cycle',
+              timeout: 0
+            });
+        });
+    </script>
+	</head>
+	<body>
+    <div id="color-selection">
+      <form>
+        <input type="radio" name="color" value="none">None
+        <br>
+        <input type="radio" name="color" value="teff" checked>Temperature
+        <br>
+        <input type="radio" name="color" value="logg">Gravity
+        <br>
+        <input type="radio" name="color" value="met">Metallicity
+        <br>
+        <input type="radio" name="color" value="snr">S/N
+        <br>
+        <input type="radio" name="color" value="den">Density
+        <br>
+        <input type="radio" name="color" value="hrv">Radial vel.
+        <br>
+        <input type="radio" name="color" value="dist">Distance
+        <br>
+        <input type="radio" name="color" value="flag">LLE Flag
+        <br>
+        <input type="radio" name="color" value="ewirt">EWirt
+        <br>
+        <input type="radio" name="color" value="jmk">2MASS J-K
+      </form>
+    </div>
+
+    <div class="chart">
+	    <script type="text/javascript" src="explorer.js"></script>
+    </div>
+
+    <div class="header">
+      <font color="green">/</font><font color="#0070DD">/</font><font color="#380040">/</font><font color="red">/</font> RAVE Explorer
+		  <div class="hint">t-SNE projection of RAVE spectra</div>
+		</div>
+	</body>
+</html>
