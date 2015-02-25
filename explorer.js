@@ -1,3 +1,6 @@
+/*jslint browser: true*/
+/*jslint nomen: true*/
+/*global $, jQuery, alert, net, d3, _*/
 // box dimensions and margins
 var width = 900;
 var height = 800;
@@ -6,7 +9,17 @@ var margin = {
     right: 0,
     bottom: 0,
     left: 200
-}
+};
+
+var fx = 'scrollLeft';
+$(function () {
+    $('#cycle').cycle({
+        fx:     fx,
+        speed:  300,
+        next:   '#cycle',
+        timeout: 0
+    });
+});
 
 var pdata = [];
 var pdata_sel_id = 0; //id of the selected point
@@ -24,65 +37,77 @@ var colors = ['#700080', '#830094', '#4d00a0', '#0000b1', '#0000d5', '#0041dd',
          '#ecef00', '#f9d700', '#ffb500', '#ff8100', '#ff1500', '#ec0000',
          '#d80000', '#cc0c0c'];
 
+var llecolors = ['#000000', '#000000', '#ff0000', '#ff0000', '#0000ff',
+                 '#0000ff', '#008000', '#008000', '#ff1493', '#ff1493',
+                 '#ffff00', '#ffff00', '#87ceeb', '#87ceeb', '#00ffff',
+                 '#00ffff', '#b22222', '#b22222', '#00ff00', '#00ff00',
+                 '#ffd700', '#ffd700', '#ff7f50', '#ff7f50', '#a52a2a',
+                 '#a52a2a'];
+
+var llelabels = ['n', 'o', 't', 'e', 'b', 'g', 'd', 'a', 'h', 'p', 'c', 'w', 'u'];
+
+var Color = net.brehaut.Color;
+
 var color_scale = d3.scale.linear()
-        .domain(_.range(0, 26, 1))
+        .domain(_.range(0, 27, 1))
         .range(colors);
 var par_color_scale = d3.scale.linear()
-        .domain(_.range(0, 26, 1))
+        .domain(_.range(0, 27, 1))
         .range(colors);
 
-var seldict = { 0:"teff", 1:"logg", 2:"met", 3:"rv",
-                4:"dist", 5:"jmk", 6:"age", 7:"mass", 8:"lle",
-                9:"ewirt", 10:"snr", 11:"qk" };
+var seldict = { 0: "teff", 1: "logg", 2: "met", 3: "rv",
+                4: "dist", 5: "jmk", 6: "age", 7: "mass", 8: "lle",
+                9: "ewirt", 10: "snr", 11: "qk" };
 var plc = 0;
 
-var cursel = 'teff'
-var parsel = 'teff'
+var cursel = 'teff';
+var parsel = 'teff';
 
-var cdc = {'teff' : [3500, 8200, 188, ' K'],
-       'logg' : [0.0, 5.0, 0.2, ' dex'],
-       'met' : [-2.0, 0.3, 0.092, ' dex'],
-       'snr' : [20, 75, 2, ''],
-       'den' : [0.0, 1.0, 0.04, ''],
-       'rv' : [-75, 75, 6.0, ' km/s'],
-       'dist' : [0.0, 4.0, 0.16, ' kpc'],
-       'lle' : [0.0, 0.0, 0.0, ''],
-       'ewirt' : [0, 1.0, 0.04, ' A'],
-       'jmk' : [0.2, 1.1, 0.036, ' mag'],
-       'qk' : [0.0, 4.0, 0.16, ''],
-       'age' : [8.5, 10.2, 0.068, ''],
-       'mass' : [0.3, 1.7, 0.056, ' Msun']}
+var cdc = {'teff' : [3500, 8200, 187, ' K'],
+           'logg' : [0.0, 5.0, 0.2, ' dex'],
+           'met' : [-2.0, 0.3, 0.092, ' dex'],
+           'snr' : [15, 80, 2.6, ''],
+           'den' : [0.0, 1.0, 0.04, ''],
+           'rv' : [-75, 75, 6.0, ' km/s'],
+           'dist' : [0.0, 4.0, 0.16, ' kpc'],
+           'lle' : [0, 0, 0, ''],
+           'ewirt' : [0, 1.0, 0.04, ' A'],
+           'jmk' : [0.1, 1.4, 0.052, ' mag'],
+           'qk' : [0.0, 4.0, 0.16, ''],
+           'age' : [8.5, 10.2, 0.068, ''],
+           'mass' : [0.3, 1.7, 0.056, ' Msun']};
 
-color_scale.domain(_.range(cdc[cursel][0], cdc[cursel][1], cdc[cursel][2]))
-par_color_scale.domain(_.range(cdc[parsel][0], cdc[parsel][1], cdc[parsel][2]))
+color_scale.domain(_.range(cdc[cursel][0], cdc[cursel][1], cdc[cursel][2]));
+par_color_scale.domain(_.range(cdc[parsel][0], cdc[parsel][1], cdc[parsel][2]));
 
 function colorize(cursel, value) {
-  if (cursel != 'lle') {
-    if (value > cdc[cursel][1]) return color_scale(cdc[cursel][1]);
-    else if (value < cdc[cursel][0]) return color_scale(cdc[cursel][0]);
-    else return color_scale(value);
-  }
-  else return value;
-}
-function par_colorize(parsel, value, haz_pars) {
-  if (parsel != 'lle') {
-    if (haz_pars) {
-      if (value > cdc[parsel][1]) return par_color_scale(cdc[parsel][1]);
-        else if (value < cdc[parsel][0]) return par_color_scale(cdc[parsel][0]);
-        else return par_color_scale(value);
+    if (cursel !== 'lle') {
+        if (value > cdc[cursel][1]) { return color_scale(cdc[cursel][1]); }
+        if (value < cdc[cursel][0]) { return color_scale(cdc[cursel][0]); }
+        return color_scale(value);
     }
-    else return '#000000';
-  }
-  else return value;
+    return value;
+}
+
+function par_colorize(parsel, value, haz_pars) {
+    if (parsel !== 'lle') {
+        if (haz_pars) {
+            if (value > cdc[parsel][1]) { return par_color_scale(cdc[parsel][1]); }
+            if (value < cdc[parsel][0]) { return par_color_scale(cdc[parsel][0]); }
+            return par_color_scale(value);
+        }
+        return '#000000';
+    }
+    return value;
 }
 
 // Spectra axis
-var xss = d3.scale.linear().range([(pbox.x-10), 700]);
+var xss = d3.scale.linear().range([(pbox.x - 10), 700]);
 var yss = d3.scale.linear().range([800, 650]);
 
 var line = d3.svg.line()
-    .x(function(d) { return xss(d.wl); })
-    .y(function(d) { return yss(d.flux); })
+    .x(function (d) { return xss(d.wl); })
+    .y(function (d) { return yss(d.flux); })
     .interpolate("basis");
 
 xss.domain([8400, 8800]);
@@ -185,35 +210,50 @@ svg.append("a")
 // COLOR BAR
 var cbarpoints = [];
 for (var i = 0; i < 26; i++) {
-  var rxcen = -94 + 6 * i;
-  cbarpoints.push([rxcen -3, 75, rxcen - 3, 85, rxcen + 3, 85, rxcen + 3, 75])
+  var rxcen = -98 + 6 * i;
+  cbarpoints.push([rxcen -3, 68, rxcen - 3, 78, rxcen + 3, 78, rxcen + 3, 68])
 }
 
 svg.selectAll("#colorbar")
-        .data(_.range(cdc[cursel][0], cdc[cursel][1], cdc[cursel][2]))
-    	  .enter().append("polygon")
-    		.attr("points", function(d, i) { return cbarpoints[i]; })
-    		.style("fill", function(d, i) {return colorize(cursel, d); })
-    		.style("fill-opacity",0.8)
-        .attr("class", "colorbar");
+    .data(_.range(cdc[cursel][0], cdc[cursel][1], cdc[cursel][2]))
+    .enter().append("polygon")
+    .attr("points", function(d, i) {return cbarpoints[i]; })
+    .style("fill", function(d, i) {return colorize(cursel, d); })
+    .style("fill-opacity",0.8)
+    .attr("class", "colorbar");
+
+svg.selectAll("#colorbarlabelllelabels")
+    .data(_.range(0, 26, 2))
+    .enter().append("text")
+    .attr("transform", function(d, i) {return "translate(" + (cbarpoints[2*i][0] + 2.5) + "," + (cbarpoints[2*i][1] - 2) + ")";})
+    .style("fill", "#444444")
+    .style("fill-opacity", 0.0)
+    .text(function(d, i) {return llelabels[i];})
+    .attr("class", "colorbarlabelllelabels");
 
 svg.append("text")
-    .attr("x",-145)
-    .attr("y", 85)
+    .attr("x",-147)
+    .attr("y", 78)
     .style("fill", "#444444")
     .text(cdc[cursel][0] + cdc[cursel][3])
     .attr("class", "colorbarlabelleft");
 
 svg.append("text")
-    .attr("x", 60)
-    .attr("y", 85)
+    .attr("x", 59)
+    .attr("y", 78)
     .style("fill", "#444444")
     .text(cdc[cursel][1] + cdc[cursel][3])
     .attr("class", "colorbarlabelright");
 
+svg.append("text")
+    .attr("x", -96)
+    .attr("y", 58)
+    .style("fill", "#444444")
+    .attr("class", "selectedhex");
+
 // Missing circle
 svg.append("circle")
-    .attr("transform", "translate(" + (-63) + "," + (60) + ")")
+    .attr("transform", "translate(" + (-63) + "," + (92) + ")")
     .attr("r", 3.5)
     .style("fill", "#000000")
     .style("fill-opacity", 0.5)
@@ -221,7 +261,7 @@ svg.append("circle")
 
 svg.append("text")
     .attr("x", -53)
-    .attr("y", 64)
+    .attr("y", 96)
     .style("fill", "#000000")
     .text("not part of DR4");
 
@@ -231,6 +271,20 @@ function click_parameter_keyword() {
     if (plc > 11) plc = 0;
     parsel = seldict[plc]
 
+    par_color_scale.domain(_.range(0, 27, 1))
+    if (parsel == 'lle') {
+        svg.selectAll(".colorbar")
+            .style("fill", function(d, i) {return llecolors[i];})
+        svg.selectAll(".colorbarlabelllelabels")
+            .style("fill-opacity", 1.0)
+    }
+    else {
+        svg.selectAll(".colorbar")
+            .style("fill", function(d, i) {return par_color_scale(i);})
+        svg.selectAll(".colorbarlabelllelabels")
+            .style("fill-opacity", 0.0)
+    }
+
     par_color_scale.domain(_.range(cdc[parsel][0], cdc[parsel][1], cdc[parsel][2]))
 
     svg.selectAll(".plot")
@@ -239,6 +293,21 @@ function click_parameter_keyword() {
 		    .duration(200)
         .style("fill", function(d) {return par_colorize(parsel, d[parsel], d.haz_pars);})
         .style("stroke", function(d) {return d3.rgb(par_colorize(parsel, d[parsel], d.haz_pars)).darker(1);});
+
+
+    if (cdc[parsel][1] < 15.0) var tofixed =  1;
+    else if (parsel == 'qk') tofixed = 0
+    else var tofixed = 0;
+    if (parsel != 'lle') var lstr = cdc[parsel][0].toFixed(tofixed) + cdc[parsel][3];
+    else var lstr = '';
+    svg.selectAll(".colorbarlabelleft")
+        .text(lstr)
+        .attr("x", -114 - 5 * lstr.length)
+    if (parsel != 'lle') var rstr = cdc[parsel][1].toFixed(tofixed) + cdc[parsel][3];
+    else var rstr = '';
+    svg.selectAll(".colorbarlabelright")
+        .text(rstr)
+        .attr("x", 62)
 };
 
 d3.selectAll(".pardiv")
@@ -281,7 +350,7 @@ svg.append("text")
     .text("S/N");
 
 // Parameter circles
-var ccoordsx = [-95, -80, -65, -50, 45, 60, 75, 90];
+var ccoordsx = [-100, -85, -70, -55, 50, 65, 80, 95];
 var ccolors = ["#db0000", "#ff0900", "#ffbd00", "#dcf400", "#00cf00", "#009cd3", "#0d00a8", "#860097"];
 for (var i = 0; i < 8; i += 1) {
   svg.append("circle")
@@ -308,18 +377,21 @@ d3.selectAll("#color-selection input[name=color]").on('change', function(){
     svg.selectAll(".chart")
 		    .style("fill", function(d, i) { return nc[i]; });
 
-    if (cdc[cursel][1] < 15.0) var tofixed =  1;
-    else var tofixed = 0;
-    var lstr = cdc[cursel][0].toFixed(tofixed) + cdc[cursel][3]
-    svg.selectAll(".colorbarlabelleft")
-        .text(lstr)
-        .attr("x", 300 - 5 * lstr.length)
-    var rstr = cdc[cursel][1].toFixed(tofixed) + cdc[cursel][3]
-    svg.selectAll(".colorbarlabelright")
-        .text(rstr)
-        .attr("x", 582)
 });
 
+// PARAMETER TABLE
+// RAVEID, RAVE name, SIMBAD, VIZIER
+// teff    dist     flags
+// logg    2mass    ewirt
+// met     age      s/n
+// RV      mass     qk
+var table = body.append("table")
+    .html('<col width="70px" /><col width="200px" />')
+    .attr("class", "partable")
+    // <col width="40px" />
+table.append("tr").html("<td>RAVEID</td><td id='ptraveid'></td>");
+table.append("tr").html("<td>RAVE Name</td><td id='ptravename'></td>");
+table.append("tr").html("<td></td><td id='ptlinks'></td>")
 ////////////////////////////////////////////////////////////////////////////////
 // ZOOM & SQUARIFY
 
@@ -445,7 +517,7 @@ function click_squarify() {
     var packsize = Math.sqrt(pdata.length) * 18;
     var pack = d3.layout.pack()
         .size([packsize, packsize])
-        .sort(function(a, b) {return a.pval - b.pval;})
+        .sort(function(a, b) {if (parsel != 'lle') return a.pval - b.pval; else return Color(a.pval).getLightness() - Color(b.pval).getLightness();})
         .radius(function(d) {return d;})
         .padding(3) // padding between adjacent circles
         .value(function(d) {return d['size'];});
@@ -540,7 +612,7 @@ function mout_hex(d) {
         .style("opacity", 1);
 };
 
-function mclick(d, i) {
+function mclick(d, j) {
     svg.selectAll(".bighex").remove();
     svg.selectAll(".marked_point").remove();
     pdata_sel_id = 0;
@@ -570,7 +642,11 @@ function mclick(d, i) {
     svg.selectAll(".plot")
         .remove();
 
-    d3.json("fields/field" + i + ".json", function(error, json) {
+    body.select('#ptraveid').html('');
+    body.select('#ptravename').html('');
+    body.select('#ptlinks').html('');
+
+    d3.json("fields/field" + j + ".json", function(error, json) {
         if (error) return console.warn(error);
         pdata = json;
 
@@ -591,9 +667,14 @@ function mclick(d, i) {
           .on("mouseover", mover_hex)
           .on("mouseout", mout_hex)
           .on("click", mclick_hex);
+
+        if (pdata.length == 1) { nrs = ''; }
+        else {nrs = 's';}
+
+        body.select('.selectedhex').text('Hex ID: ' + j + ' (' + pdata.length + ' object' + nrs + ')');
     });
 
-    d3.json("fields/avgspectrum" + i + ".json", function(error, json) {
+    d3.json("fields/avgspectrum" + j + ".json", function(error, json) {
         if (error) return console.warn(error);
         sdata = json;
 
@@ -658,22 +739,22 @@ function mclick_hex(d) {
       .style("fill", "none");
     });
 
-    // var sstr = d[13].split('.');
-    // var obsdate = sstr[0].split('/')[0];
-    // var field = sstr[0].split('/')[1];
-    // var fiber = sstr[2];
-    // var obsdatep = obsdate.slice(0,4) + ':' + obsdate.slice(4,6) + ':' + obsdate.slice(6,8);
+    // Parameters tablei
+    var raveid = d.id.split('_');
+    var obsdate = raveid[0];
+    var field = raveid[1];
+    var fiber = raveid[2];
+    var obsdatep = obsdate.slice(0,4) + ':' + obsdate.slice(4,6) + ':' + obsdate.slice(6,8);
 
-    // var vstr = 'http://vizier.u-strasbg.fr/viz-bin/VizieR?-source=III/272/ravedr4&Field=' +
-    //            field + '&Obsdate=' + obsdatep + '&Fiber=' + fiber +
-    //            '&-out=Name,RAVE,Obsdate,Field,Fiber,Jmag2,HRV,TeffK,loggK,c[M/H]K,SNRK,Dist,c1,c2,c3';
+    var vstr = 'http://vizier.u-strasbg.fr/viz-bin/VizieR?-source=III/272/ravedr4&Field=' +
+               field + '&Obsdate=' + obsdatep + '&Fiber=' + fiber +
+               '&-out=Name,RAVE,Obsdate,Field,Fiber,Jmag2,Kmag2,HRV,TeffK,loggK,c[M/H]K,SNRK,Dist,c1,c2,c3';
 
-    // body.select('#tl3').html(obsdate + '_' + field + '_' + fiber);
-    // body.select('.vizier_link')
-    //     .attr("xlink:href", vstr)
-    //     .attr("target", "_blank")
-    //     .select('.vizier_icon')
-    //         .attr('opacity', 1.0);
+    var sstr = 'http://simbad.u-strasbg.fr/simbad/sim-id?Ident=RAVE+'+ d.rave +'&NbIdent=1&Radius=2&Radius.unit=arcmin&submit=submit+id'
+
+    body.select('#ptraveid').html(d.id);
+    body.select('#ptravename').html(d.rave);
+    body.select('#ptlinks').html('<a href="' + vstr + '" target=_blank>Vizier</a>&nbsp&nbsp&nbsp<a href="' + sstr + '" target=_blank>Simbad</a>');
 };
 
 d3.json("tsne.json", function(error, json) {
